@@ -1,0 +1,11 @@
+Flask>=3.1,<4
+Flask-SQLAlchemy>=3.1,<4
+Flask-Migrate>=4.1,<5
+Flask-JWT-Extended>=4.7,<5
+flask-cors>=6,<7
+PyMySQL>=1.1,<2
+python-dotenv>=1.1,<2
+requests>=2.32,<3
+pydantic>=2.11,<3
+mistralai>=1.9,<2
+pytest>=8.4,<9
