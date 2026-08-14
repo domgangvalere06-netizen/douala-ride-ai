@@ -1,16 +1,18 @@
-"""Application service combining geocoding and routing."""
+"""Application service combining Douala catalog search, geocoding and routing."""
 
 from app.integrations.maps.geocoding import NominatimClient
 from app.integrations.maps.osrm import OSRMClient
+from app.services.location_service import LocationService
 
 
 class MapService:
-    def __init__(self, geocoder=None, router=None):
+    def __init__(self, geocoder=None, router=None, location_service=None):
         self.geocoder = geocoder or NominatimClient()
         self.router = router or OSRMClient()
+        self.location_service = location_service or LocationService(self.geocoder)
 
     def search_location(self, query: str, limit: int = 5):
-        return self.geocoder.search(query, limit=limit)
+        return self.location_service.search(query, limit=limit)
 
     def calculate_route(self, origin: tuple[float, float], destination: tuple[float, float]):
         return self.router.route(
