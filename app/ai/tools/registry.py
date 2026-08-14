@@ -2,8 +2,11 @@
 
 from typing import Any, Callable
 
+from app.ai.tools.bookings import create_booking
+from app.ai.tools.drivers import find_available_drivers
 from app.ai.tools.fares import estimate_trip_fare
 from app.ai.tools.maps import MapTools
+from app.ai.tools.options import compare_transport_options
 
 
 class ToolRegistry:
@@ -13,6 +16,9 @@ class ToolRegistry:
             "search_location": maps.search_location,
             "calculate_route": maps.calculate_route,
             "estimate_fare": estimate_trip_fare,
+            "find_available_drivers": find_available_drivers,
+            "compare_transport_options": compare_transport_options,
+            "create_booking": create_booking,
         }
 
     def names(self) -> list[str]:
