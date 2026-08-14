@@ -49,6 +49,30 @@ class MistralAdapter:
                     "parameters": {"type": "object", "properties": {"vehicle_type": {"type": "string", "enum": ["moto", "car"]}, "distance_km": {"type": "number"}, "duration_minutes": {"type": "integer"}}, "required": ["vehicle_type", "distance_km", "duration_minutes"]},
                 },
             },
+            "find_available_drivers": {
+                "type": "function",
+                "function": {
+                    "name": "find_available_drivers",
+                    "description": "Find verified, safe, online drivers near a pickup coordinate.",
+                    "parameters": {"type": "object", "properties": {"pickup_lat": {"type": "number"}, "pickup_lon": {"type": "number"}, "vehicle_type": {"type": "string", "enum": ["moto", "car"]}, "max_distance_km": {"type": "number"}, "limit": {"type": "integer"}}, "required": ["pickup_lat", "pickup_lon"]},
+                },
+            },
+            "compare_transport_options": {
+                "type": "function",
+                "function": {
+                    "name": "compare_transport_options",
+                    "description": "Compare moto and car using route distance, duration, budget and preference.",
+                    "parameters": {"type": "object", "properties": {"distance_km": {"type": "number"}, "duration_minutes": {"type": "integer"}, "budget_xaf": {"type": "integer"}, "preferred_vehicle": {"type": "string", "enum": ["moto", "car"]}}, "required": ["distance_km", "duration_minutes"]},
+                },
+            },
+            "create_booking": {
+                "type": "function",
+                "function": {
+                    "name": "create_booking",
+                    "description": "Create a passenger-confirmed pending booking and start driver search. Payment remains required before trip activation.",
+                    "parameters": {"type": "object", "properties": {"passenger_id": {"type": "integer"}, "pickup_address": {"type": "string"}, "pickup_latitude": {"type": "number"}, "pickup_longitude": {"type": "number"}, "destination_address": {"type": "string"}, "destination_latitude": {"type": "number"}, "destination_longitude": {"type": "number"}, "vehicle_type": {"type": "string", "enum": ["moto", "car"]}, "estimated_fare": {"type": "integer"}, "distance_km": {"type": "number"}, "estimated_duration_minutes": {"type": "integer"}, "confirmed": {"type": "boolean"}}, "required": ["passenger_id", "pickup_address", "pickup_latitude", "pickup_longitude", "destination_address", "destination_latitude", "destination_longitude", "vehicle_type", "estimated_fare", "distance_km", "estimated_duration_minutes", "confirmed"]},
+                },
+            },
         }
         return [definitions[name] for name in tool_names if name in definitions]
 
@@ -60,8 +84,7 @@ class MistralAdapter:
             {"role": "system", "content": context["system"]},
             {"role": "user", "content": context["user_message"]},
         ]
-        available = context["available_tools"]
-        tool_defs = self._tool_definitions(available)
+        tool_defs = self._tool_definitions(context["available_tools"])
 
         for _ in range(6):
             payload = {"model": self.model, "messages": messages, "tools": tool_defs, "tool_choice": "auto", "temperature": 0.1}
