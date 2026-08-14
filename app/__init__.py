@@ -27,8 +27,12 @@ def create_app(config_object=None):
     origins = app.config.get("CORS_ORIGINS", "*")
     CORS(app, origins=[item.strip() for item in origins.split(",")])
 
-    # Import models so SQLAlchemy metadata knows every table before migrations.
     from app import models  # noqa: F401
+
+    from app.api.ai.routes import ai_bp
+    from app.api.maps.routes import maps_bp
+    app.register_blueprint(ai_bp)
+    app.register_blueprint(maps_bp)
 
     @app.get("/health")
     def health_check():
