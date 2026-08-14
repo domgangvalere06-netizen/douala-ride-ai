@@ -1,0 +1,47 @@
+"""Curated Douala location catalog used for fast, predictable pickup search.
+Coordinates are approximate neighborhood/landmark centroids; live routing still
+uses the selected coordinates and OSRM. Nominatim remains the fallback for
+locations not present here.
+"""
+
+DOUALA_LOCATIONS = [
+    {"name": "Bonaberi", "latitude": 4.0850, "longitude": 9.6600, "type": "neighborhood"},
+    {"name": "Akwa", "latitude": 4.0511, "longitude": 9.7043, "type": "neighborhood"},
+    {"name": "Deido", "latitude": 4.0708, "longitude": 9.6900, "type": "neighborhood"},
+    {"name": "Bonamoussadi", "latitude": 4.0897, "longitude": 9.7420, "type": "neighborhood"},
+    {"name": "Makepe", "latitude": 4.0840, "longitude": 9.7540, "type": "neighborhood"},
+    {"name": "Logpom", "latitude": 4.0750, "longitude": 9.7810, "type": "neighborhood"},
+    {"name": "Bépanda", "latitude": 4.0600, "longitude": 9.7180, "type": "neighborhood"},
+    {"name": "New Bell", "latitude": 4.0470, "longitude": 9.7070, "type": "neighborhood"},
+    {"name": "Ndokoti", "latitude": 4.0550, "longitude": 9.7600, "type": "neighborhood"},
+    {"name": "Ndogbong", "latitude": 4.0700, "longitude": 9.7550, "type": "neighborhood"},
+    {"name": "Bassa", "latitude": 4.0350, "longitude": 9.7500, "type": "neighborhood"},
+    {"name": "Kotto", "latitude": 4.0950, "longitude": 9.7700, "type": "neighborhood"},
+    {"name": "Logbessou", "latitude": 4.1080, "longitude": 9.7890, "type": "neighborhood"},
+    {"name": "Yassa", "latitude": 4.0250, "longitude": 9.8050, "type": "neighborhood"},
+    {"name": "Japoma", "latitude": 3.9960, "longitude": 9.7990, "type": "neighborhood"},
+    {"name": "Bonapriso", "latitude": 4.0190, "longitude": 9.6930, "type": "neighborhood"},
+    {"name": "Bonanjo", "latitude": 4.0450, "longitude": 9.6930, "type": "neighborhood"},
+    {"name": "Bali", "latitude": 4.0550, "longitude": 9.7000, "type": "neighborhood"},
+    {"name": "Deido Plage", "latitude": 4.0730, "longitude": 9.6780, "type": "landmark_area"},
+    {"name": "Village", "latitude": 4.0450, "longitude": 9.7140, "type": "neighborhood"},
+    {"name": "Bessengue", "latitude": 4.0730, "longitude": 9.7000, "type": "neighborhood"},
+    {"name": "Mabanda", "latitude": 4.0860, "longitude": 9.6780, "type": "neighborhood"},
+    {"name": "Bonendale", "latitude": 4.0960, "longitude": 9.6380, "type": "neighborhood"},
+    {"name": "PK 8", "latitude": 4.0680, "longitude": 9.7830, "type": "area"},
+    {"name": "PK 10", "latitude": 4.0610, "longitude": 9.8070, "type": "area"},
+    {"name": "PK 12", "latitude": 4.0570, "longitude": 9.8210, "type": "area"},
+    {"name": "University of Douala", "latitude": 4.0660, "longitude": 9.7520, "type": "landmark"},
+    {"name": "Douala Grand Mall", "latitude": 4.0210, "longitude": 9.7020, "type": "landmark"},
+    {"name": "Douala International Airport", "latitude": 4.0061, "longitude": 9.7195, "type": "landmark"},
+    {"name": "Port of Douala", "latitude": 4.0515, "longitude": 9.6860, "type": "landmark"},
+    {"name": "Marché Central", "latitude": 4.0510, "longitude": 9.7080, "type": "landmark"},
+    {"name": "Marché Mboppi", "latitude": 4.0600, "longitude": 9.7350, "type": "landmark"},
+    {"name": "Carrefour Market Bonamoussadi", "latitude": 4.0900, "longitude": 9.7410, "type": "landmark"},
+    {"name": "Rond-point Deido", "latitude": 4.0720, "longitude": 9.6910, "type": "landmark"},
+    {"name": "Rond-point Maeturs", "latitude": 4.0820, "longitude": 9.7480, "type": "landmark"},
+    {"name": "Carrefour Ndokoti", "latitude": 4.0560, "longitude": 9.7590, "type": "landmark"},
+    {"name": "Carrefour Agip", "latitude": 4.0400, "longitude": 9.7020, "type": "landmark"},
+    {"name": "Akwa Palace", "latitude": 4.0500, "longitude": 9.7010, "type": "landmark"},
+    {"name": "Bonanjo Post Office", "latitude": 4.0430, "longitude": 9.6920, "type": "landmark"},
+]
