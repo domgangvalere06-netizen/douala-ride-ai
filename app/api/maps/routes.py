@@ -8,16 +8,21 @@ maps_bp = Blueprint("maps", __name__, url_prefix="/api/maps")
 map_service = MapService()
 
 
-@maps_bp.get("/search")
-def search_location():
+@maps_bp.get("/locations")
+def locations():
     query = request.args.get("q", "", type=str)
-    limit = request.args.get("limit", 5, type=int)
+    limit = request.args.get("limit", 10, type=int)
     if not query.strip():
         return jsonify({"error": "q is required"}), 400
     try:
         return jsonify({"results": map_service.search_location(query, limit=limit)})
     except Exception as exc:
         return jsonify({"error": str(exc)}), 502
+
+
+@maps_bp.get("/search")
+def search_location():
+    return locations()
 
 
 @maps_bp.get("/route")
