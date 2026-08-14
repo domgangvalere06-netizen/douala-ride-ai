@@ -16,17 +16,19 @@ class Config:
 
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
     MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
+    MISTRAL_BASE_URL = os.getenv("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
 
     OSRM_BASE_URL = os.getenv("OSRM_BASE_URL", "https://router.project-osrm.org")
     NOMINATIM_BASE_URL = os.getenv(
         "NOMINATIM_BASE_URL", "https://nominatim.openstreetmap.org"
     )
 
-    PAWAPAY_API_URL = os.getenv("PAWAPAY_API_URL")
+    PAWAPAY_API_URL = os.getenv("PAWAPAY_API_URL", "https://api.sandbox.pawapay.io")
     PAWAPAY_API_TOKEN = os.getenv("PAWAPAY_API_TOKEN")
+    PAWAPAY_PROVIDER = os.getenv("PAWAPAY_PROVIDER", "MTN_MOMO_CMR")
     PAWAPAY_CALLBACK_URL = os.getenv("PAWAPAY_CALLBACK_URL")
 
-    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 
