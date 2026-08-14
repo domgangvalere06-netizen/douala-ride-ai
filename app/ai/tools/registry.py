@@ -7,6 +7,7 @@ from app.ai.tools.drivers import find_available_drivers
 from app.ai.tools.fares import estimate_trip_fare
 from app.ai.tools.maps import MapTools
 from app.ai.tools.options import compare_transport_options
+from app.ai.tools.payments import get_payment_status, initiate_payment
 
 
 class ToolRegistry:
@@ -20,6 +21,8 @@ class ToolRegistry:
             "find_available_drivers": find_available_drivers,
             "compare_transport_options": compare_transport_options,
             "create_booking": create_booking,
+            "initiate_payment": initiate_payment,
+            "get_payment_status": get_payment_status,
         }
 
     def names(self) -> list[str]:
