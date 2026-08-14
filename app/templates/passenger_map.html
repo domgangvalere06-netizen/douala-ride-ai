@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Douala Ride — Passenger Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f7fb;color:#172033}header{padding:16px 20px;background:#111827;color:white}header strong{font-size:20px}main{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 58px)}aside{padding:18px;background:white;overflow:auto;box-shadow:2px 0 10px #00000012;z-index:1000}.field{margin-bottom:14px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input{width:100%;padding:12px;border:1px solid #d6dbe5;border-radius:10px;font-size:15px}.results{margin-top:5px}.result{padding:10px;border-bottom:1px solid #eee;cursor:pointer}.result:hover{background:#f3f6fb}.muted{color:#6b7280;font-size:12px}.card{margin-top:16px;padding:14px;border:1px solid #e5e7eb;border-radius:12px}.option{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}.option:last-child{border-bottom:0}.badge{font-size:11px;padding:3px 7px;border-radius:999px;background:#eef2ff}.primary{width:100%;margin-top:14px;padding:12px;border:0;border-radius:10px;background:#111827;color:white;font-weight:700;cursor:pointer}.primary:disabled{opacity:.45;cursor:not-allowed}#map{height:100%;min-height:500px}.status{font-size:13px;margin-top:10px}.error{color:#b91c1c}.success{color:#047857}@media(max-width:800px){main{grid-template-columns:1fr;height:auto}aside{order:2}#map{height:60vh}}
+  </style>
+</head>
+<body>
+<header><strong>Douala Ride</strong> <span class="muted" style="color:#cbd5e1">AI Mobility Map</span></header>
+<main>
+<aside>
+  <div class="field"><label>PICKUP</label><input id="pickup" placeholder="e.g. Bonaberi" autocomplete="off"><div id="pickupResults" class="results"></div></div>
+  <div class="field"><label>DESTINATION</label><input id="destination" placeholder="e.g. Akwa" autocomplete="off"><div id="destinationResults" class="results"></div></div>
+  <button id="routeBtn" class="primary" disabled>Calculate real route</button>
+  <div id="status" class="status"></div>
+  <div id="tripCard"></div>
+</aside>
+<section id="map"></section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map').setView([4.05,9.70],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+let pickup=null,destination=null,pickupMarker=null,destinationMarker=null,routeLayer=null;
+const $=id=>document.getElementById(id);
+function setStatus(text,cls=''){ $('status').className='status '+cls; $('status').textContent=text; }
+function markerFor(point,old, label){if(old) map.removeLayer(old);const m=L.marker([point.latitude,point.longitude]).addTo(map).bindPopup(label).openPopup();return m}
+function renderResults(target,items,kind){target.innerHTML='';items.forEach(item=>{const el=document.createElement('div');el.className='result';el.innerHTML=`<strong>${item.name||item.display_name}</strong><div class="muted">${item.display_name||''} · ${item.source||''}</div>`;el.onclick=()=>{const p={latitude:Number(item.latitude),longitude:Number(item.longitude),name:item.name||item.display_name};if(kind==='pickup'){pickup=p;pickupMarker=markerFor(p,pickupMarker,'Pickup: '+p.name);$('pickup').value=p.name;$('pickupResults').innerHTML='';}else{destination=p;destinationMarker=markerFor(p,destinationMarker,'Destination: '+p.name);$('destination').value=p.name;$('destinationResults').innerHTML='';}if(pickup&&destination){$('routeBtn').disabled=false;map.fitBounds(L.latLngBounds([[pickup.latitude,pickup.longitude],[destination.latitude,destination.longitude]]),{padding:[40,40]});}};target.appendChild(el)});}
+let timers={};function search(input,box,kind){clearTimeout(timers[kind]);timers[kind]=setTimeout(async()=>{const q=input.value.trim();if(q.length<2){box.innerHTML='';return}try{const r=await fetch('/api/maps/locations?q='+encodeURIComponent(q)+'&limit=8');const data=await r.json();if(!r.ok)throw Error(data.error||'Search failed');renderResults(box,data.results||[],kind)}catch(e){box.innerHTML='';setStatus(e.message,'error')}},250)}
+$('pickup').oninput=()=>search($('pickup'),$('pickupResults'),'pickup');$('destination').oninput=()=>search($('destination'),$('destinationResults'),'destination');
+$('routeBtn').onclick=async()=>{if(!pickup||!destination)return;setStatus('Calculating route…');$('routeBtn').disabled=true;try{const qs=new URLSearchParams({origin_lat:pickup.latitude,origin_lon:pickup.longitude,destination_lat:destination.latitude,destination_lon:destination.longitude});const r=await fetch('/api/maps/route?'+qs);const data=await r.json();if(!r.ok)throw Error(data.error||'Route calculation failed');if(routeLayer)map.removeLayer(routeLayer);if(data.geometry&&data.geometry.coordinates){const latlngs=data.geometry.coordinates.map(c=>[c[1],c[0]]);routeLayer=L.polyline(latlngs,{weight:6}).addTo(map);map.fitBounds(routeLayer.getBounds(),{padding:[50,50]})}const km=Number(data.distance_km||data.distance||0);const min=Number(data.duration_minutes||data.duration||0);const moto=Math.max(500,Math.round((km*250)+300));const car=Math.max(1000,Math.round((km*450)+700));$('tripCard').innerHTML=`<div class="card"><strong>Route summary</strong><div class="muted" style="margin-top:5px">${pickup.name} → ${destination.name}</div><div class="option"><span>Distance</span><strong>${km.toFixed(1)} km</strong></div><div class="option"><span>Estimated time</span><strong>${Math.round(min)} min</strong></div><div class="option"><span>🏍️ Moto</span><strong>${moto.toLocaleString()} FCFA</strong></div><div class="option"><span>🚗 Car</span><strong>${car.toLocaleString()} FCFA</strong></div><div class="muted" style="margin-top:10px">Fare preview only. Final pricing must come from the backend fare service.</div></div>`;setStatus('Real road route calculated.','success')}catch(e){setStatus(e.message,'error')}finally{$('routeBtn').disabled=false}};
+</script>
+</body>
+</html>
