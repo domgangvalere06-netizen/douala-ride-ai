@@ -31,8 +31,10 @@ def create_app(config_object=None):
 
     from app.api.ai.routes import ai_bp
     from app.api.maps.routes import maps_bp
+    from app.api.web.routes import web_bp
     app.register_blueprint(ai_bp)
     app.register_blueprint(maps_bp)
+    app.register_blueprint(web_bp)
 
     @app.get("/health")
     def health_check():
