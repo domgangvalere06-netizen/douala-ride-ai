@@ -1,17 +1,15 @@
 """Payment API endpoints and asynchronous PawaPay callback handling."""
 
-from decimal import Decimal
-
 from flask import Blueprint, jsonify, request
 
 from app import db
 from app.integrations.payments.pawapay import PawaPayClient, PawaPayError
-from app.models.booking import Booking
 from app.models.payment import Payment
 from app.models.payment_event import PaymentEvent
-from app.services.payment_service import PaymentService
+from app.services.payment_application import PaymentApplicationService
 
 payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
+payment_service = PaymentApplicationService()
 
 
 @payments_bp.post("/initiate")
@@ -27,44 +25,20 @@ def initiate_payment():
     if not isinstance(amount, int) or amount <= 0 or not phone:
         return jsonify({"error": "positive amount_xaf and phone_number are required"}), 400
 
-    booking = db.session.get(Booking, booking_id)
-    if not booking:
-        return jsonify({"error": "Booking not found"}), 404
-    if booking.payment is not None:
-        return jsonify({"error": "Payment already exists for this booking", "reference": booking.payment.reference}), 409
-
-    payment = Payment(booking_id=booking.id, amount=Decimal(amount), currency="XAF", status="PENDING", payment_method=provider or "MOBILE_MONEY")
-    db.session.add(payment)
-    db.session.flush()
-
     try:
-        intent = PaymentService(PawaPayClient()).initiate(
-            payment.reference,
-            amount,
-            phone,
-            provider=provider,
-        )
-        payment.status = intent.status.value
-        payment.provider_transaction_id = intent.provider_reference
-        payment.payment_method = provider or "MOBILE_MONEY"
-        db.session.commit()
-        return jsonify({
-            "reference": payment.reference,
-            "booking_id": booking.id,
-            "amount_xaf": amount,
-            "currency": "XAF",
-            "status": payment.status,
-            "provider": payment.provider,
-            "deposit_id": intent.provider_reference,
-        }), 202
+        return jsonify(payment_service.initiate_for_booking(booking_id, amount, phone, provider)), 202
     except PawaPayError as exc:
-        payment.status = "FAILED"
-        payment.failure_reason = str(exc)
-        db.session.commit()
-        return jsonify({"error": str(exc), "reference": payment.reference}), 502
+        return jsonify({"error": str(exc)}), 502
     except ValueError as exc:
-        db.session.rollback()
         return jsonify({"error": str(exc)}), 400
+
+
+@payments_bp.get("/<reference>")
+def payment_status(reference: str):
+    try:
+        return jsonify(payment_service.get_status(reference)), 200
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 404
 
 
 @payments_bp.post("/webhook")
@@ -83,13 +57,18 @@ def payment_webhook():
     if not payment:
         return jsonify({"error": "Payment not found"}), 404
 
-    event = PaymentEvent(
+    # PawaPay callbacks can be retried. Treat a previously received deposit
+    # event as idempotent instead of inserting duplicate provider events.
+    deposit_id = normalized.get("deposit_id")
+    if deposit_id and db.session.query(PaymentEvent).filter_by(provider_event_id=deposit_id).first():
+        return jsonify({"received": True, "reference": reference, "status": payment.status}), 200
+
+    db.session.add(PaymentEvent(
         payment_id=payment.id,
-        provider_event_id=normalized.get("deposit_id"),
+        provider_event_id=deposit_id,
         event_type=f"PAWAPAY_{normalized['status']}",
         payload_json=normalized["raw"],
-    )
-    db.session.add(event)
+    ))
 
     status = normalized["status"]
     payment.status = {"COMPLETED": "SUCCESS", "PROCESSING": "PROCESSING", "FAILED": "FAILED"}[status]
