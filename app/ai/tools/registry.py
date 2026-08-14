@@ -15,6 +15,7 @@ class ToolRegistry:
         self._tools: dict[str, Callable[..., Any]] = {
             "search_location": maps.search_location,
             "calculate_route": maps.calculate_route,
+            "plan_trip": maps.plan_trip,
             "estimate_fare": estimate_trip_fare,
             "find_available_drivers": find_available_drivers,
             "compare_transport_options": compare_transport_options,
